@@ -1,6 +1,6 @@
 # Cryptocurrencies-Testing-for-heteroskedasticity-multicollinearity-serial-autocorrelation-
 
-Task: Run an OLS multiple regression model using any combination of ten assets and ten macro macroeconomic variables. 
+Task: Run an OLS multiple regression model using any combination of ten assets and ten macroeconomic variables. 
 
 The daily spot prices of the following ten (crypto) currencies were examined: Bitcoin (BTC), Bitcoin Cash (BCH), Litecoin (LTC), Ethereum (ETH), Euro (EUR), Swiss franc (CHF), Pound sterling (GBP ), Russian ruble (RUB), Japanese yen (JPY), Swedish krona (SEK). The daily sample includes data from November 1, 2018 to January 1, 2021. Various data sets were drawn from Thomson Reuters Eikon for the investigation.
 
