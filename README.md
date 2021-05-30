@@ -21,3 +21,191 @@ The presence of autocorrelation was also checked. All results of the performed D
 
 In conclusion, it has been shown that multicollinearity, autocorrelation, heteroscedasticity do not perfectly explain the price movements and developments of the ten currencies. 
 
+
+# Codes used for the regression analysis:
+
+Start Regression:
+
+df = df.copy()
+#unrelevant regression - just to get different values of OLS that can be included in final output
+y = df['BTC_log']
+x = df[['Gold', 'Silver','Palladium','Platinum','OIL','MSCI', 'FTSE_100','NASDAQ','DAX', 'SMI']]
+x = sm.add_constant(x)
+model = sm.OLS(y,x, missing = 'drop') 
+results = model.fit()
+
+#list all different values that the results object of an OLS can return to select for loop
+dir(results) 
+
+dflog=dflog.dropna()
+target_variables_log = ['BTC_log', 'BCH_log', 'LTC_log', 'ETH_log','EUR_log', 'CHF_log', 'GBP_log', 'RUB_log', 'YEN_log', 'SEK_log']
+
+#x = df[['Gold', 'Silver','Palladium','Platinum','OIL','MSCI', 'FTSE_100','NASDAQ','DAX', 'SMI']]
+##x = sm.add_constant(x)
+
+x = df[['Gold_log', 'Silver_log', 'Palladium_log', 'Platinum_log', 'OIL_log', 'MSCI_log', 'FTSE_100_log', 'NASDAQ_log', 'DAX_log', 'SMI_log']]
+x = sm.add_constant(x)
+
+explanatory_variables = x.columns
+
+results_of_interest_log = []
+for i in explanatory_variables: results_of_interest_log.append('params.'+i)
+for i in explanatory_variables: results_of_interest_log.append('bse.'+i)
+for i in explanatory_variables: results_of_interest_log.append('pvalues.'+i)    
+    
+results_of_interest_log.extend(('rsquared','rsquared_adj','aic','autocorrelation', 'hetero-scedasticity_lm', 'heteroscedasticity_lm_pvalue'))#, 'multicollinearity'))
+results_of_interest_log
+
+# list/array with all regression combinations
+regression_combinations_log = []
+
+explanatory_variables_log = ['Gold_log', 'Sil-ver_log','Palladium_log','Platinum_log','OIL_log','MSCI_log', 'FTSE_100_log','NASDAQ_log','DAX_log', 'SMI_log']
+for n in range(0, len(explanatory_variables_log)+1):
+    regres-sion_combinations_log.extend(list(itertools.combinations(explanatory_variables_log, n)))
+
+#creation of all rows
+rows = []
+for asset in target_variables_log: 
+    for i in range(1,len(regression_combinations_log)+1): rows.append(asset+str(i))   
+len(rows)
+
+# loop regression combination with rows
+
+df_loop_log = pd.DataFrame(index=rows, columns=['y', 'x'])
+
+for i in range(0,len(rows)):
+    df_loop_log['y'][i] = tar-get_variables_log[math.floor(i/len(regression_combinations_log))]
+    df_loop_log['x'][i] = list(regression_combinations_log[int(math.remainder(i,len(regression_combinations_log)))])
+
+df_loop_log
+
+#create empfty dataframe to fill during the loop
+output_table_log = pd.DataFrame(index=rows, columns=results_of_interest_log)
+#loop with regression of each asset over all 10 variables
+for i in range(0,len(rows)):
+        x = dflog[df_loop_log['x'][i]]
+        x = sm.add_constant(x)
+        y = dflog[df_loop_log['y'][i]]
+        model = sm.OLS(y, x, missing = 'drop') 
+        results = model.fit()
+
+        for result in results_of_interest_log[:-3]:
+            try: output_table_log[result][i] = eval("results."+result)
+            except: pass
+
+        output_table_log["autocorrelation"][i] = durbin_watson(results.resid)
+
+        het = statsmodels.stats.diagnostic.het_breuschpagan(results.resid, exog_het = x)
+        output_table_log["heteroscedasticity_lm"][i] = het[0]
+        output_table_log["heteroscedasticity_lm_pvalue"][i] = het[1]
+
+        #output_table["multicollinearity"][asset] = add function that returns multicollinear-ity
+
+# Safe this Results -> Database SQL as Regression Results
+
+conn = sqlite3.connect(r'C:\Users\HPspectre\Desktop\AQM_Assignment\Database\AQM_Database.db')
+
+# Write the new DataFrame to a new SQLite table
+output_table_log.to_sql("RegressionResults", conn, if_exists="replace")
+conn.close()
+
+
+Analysis of the Regression:
+
+df=output_table_log.copy()
+df.index.name='ID'
+#df.reset_index().set_index('', drop=False)
+df = df.reset_index()
+df.head()
+
+# separate all Data into new Dataframes
+dfBTC = df.loc[df['ID'].str.startswith('BTC')].copy()
+dfBCH = df.loc[df['ID'].str.startswith('BCH')].copy()
+dfLTC = df.loc[df['ID'].str.startswith('LTC')].copy()
+dfETH = df.loc[df['ID'].str.startswith('ETH')].copy()
+dfEUR= df.loc[df['ID'].str.startswith('EUR')].copy()
+dfCHF = df.loc[df['ID'].str.startswith('CHF')].copy()
+dfGBP = df.loc[df['ID'].str.startswith('GBP')].copy()
+dfRUB = df.loc[df['ID'].str.startswith('RUB')].copy()
+dfYEN = df.loc[df['ID'].str.startswith('YEN')].copy()
+dfSEK= df.loc[df['ID'].str.startswith('SEK')].copy()
+
+dfBTC.set_index('ID', inplace=True)
+dfBTC=dfBTC[['rsquared_adj','aic','autocorrelation','heteroscedasticity_lm_pvalue']]
+dfBTC.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+dfBTC.head()
+
+dfBCH.set_index('ID', inplace=True)
+dfBCH=dfBCH[['rsquared_adj','aic','autocorrelation','heteroscedasticity_lm_pvalue']]
+dfBCH.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+dfBCH.head()
+
+dfLTC.set_index('ID', inplace=True)
+dfLTC=dfLTC[['rsquared_adj','aic','autocorrelation','heteroscedasticity_lm_pvalue']]
+dfLTC.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+dfLTC.head()
+
+dfETH.set_index('ID', inplace=True)
+cols = list(dfETH.columns.values)
+dfETH=dfETH[['rsquared_adj','aic','autocorrelation','heteroscedasticity_lm_pvalue']]
+dfETH.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+dfETH.head()
+
+dfEUR.set_index('ID', inplace=True)
+dfEUR=dfEUR[['rsquared_adj','aic','autocorrelation','heteroscedasticity_lm_pvalue']]
+dfEUR.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+dfEUR.head()
+
+dfCHF.set_index('ID', inplace=True)
+cols = list(dfCHF.columns.values)
+dfCHF=dfCHF[['rsquared_adj','aic','autocorrelation','heteroscedasticity_lm_pvalue']]
+dfCHF.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+dfCHF.head()
+
+dfGBP.set_index('ID', inplace=True)
+cols = list(dfGBP.columns.values)
+dfGBP=dfGBP[['rsquared_adj','aic','autocorrelation','heteroscedasticity_lm_pvalue']]
+dfGBP.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+dfGBP.head()
+
+dfRUB.set_index('ID', inplace=True)
+cols = list(dfRUB.columns.values)
+dfRUB=dfRUB[['rsquared_adj','aic','autocorrelation','heteroscedasticity_lm_pvalue']]
+dfRUB.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+dfRUB.head()
+
+dfYEN.set_index('ID', inplace=True)
+cols = list(dfYEN.columns.values)
+dfYEN=dfYEN[['rsquared_adj','aic','autocorrelation','heteroscedasticity_lm_pvalue']]
+dfYEN.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+dfYEN.head()
+
+dfSEK.set_index('ID', inplace=True)
+cols = list(dfSEK.columns.values)
+dfSEK=dfSEK[['rsquared_adj','aic','autocorrelation','heteroscedasticity_lm_pvalue']]
+dfSEK.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+dfSEK.head()
+
+DF = pd.DataFrame(columns=['rsquared_adj', 'aic','autocorrelation','heteroscedasticity_lm_pvalue'])
+DF
+
+DF=DF.append(dfBTC.head(1))
+DF=DF.append(dfBCH.head(1))
+DF=DF.append(dfLTC.head(1))
+DF=DF.append(dfETH.head(1))
+DF=DF.append(dfEUR.head(1))
+DF=DF.append(dfCHF.head(1))
+DF=DF.append(dfGBP.head(1))
+DF=DF.append(dfRUB.head(1))
+DF=DF.append(dfYEN.head(1))
+DF=DF.append(dfSEK.head(1))
+DF.sort_values(by=['rsquared_adj'], ascending=False, inplace = True)
+DF
+
+# Safe this Results -> Database SQL as HighestadjR^2Results 
+
+conn = sqlite3.connect(r'C:\Users\HPspectre\Desktop\AQM_Assignment\Database\AQM_Database.db')
+
+# Write the new DataFrame to a new SQLite table
+DF.to_sql("HighestadjR^2Results", conn, if_exists="replace")
+conn.close()
