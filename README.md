@@ -4,10 +4,9 @@ Task: Run an OLS multiple regression model using any combination of ten assets a
 
 The daily spot prices of the following ten (crypto) currencies were examined: Bitcoin (BTC), Bitcoin Cash (BCH), Litecoin (LTC), Ethereum (ETH), Euro (EUR), Swiss franc (CHF), Pound sterling (GBP ), Russian ruble (RUB), Japanese yen (JPY), Swedish krona (SEK). The daily sample includes data from November 1, 2018 to January 1, 2021. Various data sets were drawn from Thomson Reuters Eikon for the investigation.
 
-The main objective of this task was to compare each of the ten currencies (5 crypto and 5 fiat) with an OLS multiple regression model using any combination of ten macroeconomic variables. To identify relationships, the listed commodity prices and indices represent the ten macroeconomic variables. Due to the fact, that cryptocurrency records have a short historical horizon compared to the other assets examined (fiat currency, commodity, and indices), this paper uses daily historical market data. Data on cryptocurrency is only from 2018 to 2020 available on Thomson Reuters Eikon. All regressions were performed in the Python programming language.
+The main objective of this task was to compare each of the ten currencies (5 crypto and 5 fiat) with an OLS multiple regression model using any combination of ten macroeconomic variables. To identify relationships, the listed commodity prices and indices represented the ten macroeconomic variables. Due to the fact, that cryptocurrency records have a short historical horizon compared to the other assets examined (fiat currency, commodity, and indices), this paper uses daily historical market data. Data on cryptocurrency is only from 2018 to 2020 available on Thomson Reuters Eikon. All regressions were performed in the Python programming language.
 
 (1) commodities: oil (WTI brent), gold, silver, palladium, platinum 
-
 (2) indices: MSCI, NASDAQ, SMI, DAX, FTSE 100
 
 
