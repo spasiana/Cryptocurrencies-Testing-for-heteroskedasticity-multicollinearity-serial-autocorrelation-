@@ -22,9 +22,7 @@ The presence of autocorrelation was also checked. All results of the performed D
 In conclusion, it has been shown that multicollinearity, autocorrelation, heteroscedasticity do not perfectly explain the price movements and developments of the ten currencies. 
 
 
-# Codes used for the regression analysis:
-
-Start Regression:
+# Codes used for start the regression analysis:
 
 df = df.copy()
 #unrelevant regression - just to get different values of OLS that can be included in final output
